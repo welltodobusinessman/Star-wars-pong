@@ -6,8 +6,19 @@ Star Wars Pong is a modern web-based reimagining of the classic Pong game with a
 
 ## Live Game
 
-- **Repository**: https://github.com/welltodobusinessman/Star-wars-pong
-- **Play Game**: https://welltodobusinessman.github.io/Star-wars-pong/starwars-pong.html
+<div align="center">
+  <a href="https://welltodobusinessman.github.io/Star-wars-pong/starwars-pong.html">
+    <img src="https://img.shields.io/badge/🎮_PLAY_GAME-FFE81F?style=for-the-badge&logo=starwars&logoColor=black&labelColor=000000" alt="Play Star Wars Pong" />
+  </a>
+</div>
+
+<div align="center">
+  <a href="https://github.com/welltodobusinessman/Star-wars-pong">
+    <img src="https://img.shields.io/badge/📂_VIEW_REPOSITORY-333333?style=for-the-badge&logo=github&logoColor=white" alt="View Repository" />
+  </a>
+</div>
+
+<br>
 
 ## Features
 
