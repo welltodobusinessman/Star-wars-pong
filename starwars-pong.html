@@ -64,27 +64,49 @@
             right: 20px;
             background: rgba(0, 0, 0, 0.8);
             color: #FFE81F;
-            padding: 8px 12px;
+            padding: 12px 16px;
             border: 2px solid #FFE81F;
-            border-radius: 5px;
+            border-radius: 8px;
             font-family: 'Orbitron', monospace;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             font-weight: bold;
             text-shadow: 0 0 5px #FFE81F;
             z-index: 15;
             user-select: none;
             cursor: pointer;
             transition: all 0.3s;
+            min-width: 60px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
         }
         
-        .fps-button:hover {
+        .fps-button:hover,
+        .fps-button:active,
+        .fps-button:focus {
             background: rgba(255, 232, 31, 0.2);
             box-shadow: 0 0 10px #FFE81F;
+            transform: scale(1.05);
+        }
+        
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+            .fps-button {
+                top: 15px;
+                right: 15px;
+                padding: 15px 20px;
+                font-size: 1.2rem;
+                min-width: 70px;
+                min-height: 50px;
+                border-width: 3px;
+            }
         }
         
         .fps-display {
             position: absolute;
-            top: 60px;
+            top: 80px;
             right: 20px;
             background: rgba(0, 0, 0, 0.9);
             color: #00ff00;
@@ -95,12 +117,24 @@
             font-size: 1rem;
             font-weight: bold;
             text-shadow: 0 0 8px #00ff00;
-            z-index: 15;
+            z-index: 14;
             user-select: none;
             transition: all 0.3s;
             opacity: 0;
             pointer-events: none;
             transform: translateY(-10px);
+            touch-action: none;
+        }
+        
+        /* Mobile FPS display adjustments */
+        @media (max-width: 768px) {
+            .fps-display {
+                top: 75px;
+                right: 15px;
+                font-size: 0.9rem;
+                padding: 12px 16px;
+                min-width: 120px;
+            }
         }
         
         .fps-display.visible {
@@ -264,7 +298,7 @@
             <div><span id="player2Name">Player 2</span>: <span id="player2Score">0</span></div>
         </div>
         
-        <div id="fpsButton" class="fps-button" onclick="toggleFpsDisplay()">
+        <div id="fpsButton" class="fps-button" onclick="toggleFpsDisplay()" ontouchstart="this.style.transform='scale(1.05)'" ontouchend="this.style.transform='scale(1)'">
             FPS
         </div>
         
@@ -1869,6 +1903,37 @@
         
         // Add click handler to any button for audio initialization
         document.addEventListener('click', ensureAudioContext);
+        
+        // Mobile FPS button fix
+        function setupMobileFpsButton() {
+            const fpsButton = document.getElementById('fpsButton');
+            if (fpsButton) {
+                // Add touch event listeners for better mobile support
+                fpsButton.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.style.transform = 'scale(1.05)';
+                    this.style.background = 'rgba(255, 232, 31, 0.3)';
+                }, { passive: false });
+                
+                fpsButton.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.style.transform = 'scale(1)';
+                    this.style.background = 'rgba(0, 0, 0, 0.8)';
+                    toggleFpsDisplay();
+                }, { passive: false });
+                
+                fpsButton.addEventListener('touchcancel', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(1)';
+                    this.style.background = 'rgba(0, 0, 0, 0.8)';
+                }, { passive: false });
+            }
+        }
+        
+        // Setup mobile FPS button when page loads
+        setupMobileFpsButton();
         
         // Prevent default arrow key scrolling
         window.addEventListener('keydown', (e) => {
