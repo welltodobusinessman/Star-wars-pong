@@ -270,7 +270,10 @@
         
         <div id="fpsDisplay" class="fps-display">
             <div>FPS: <span id="fpsValue">60</span></div>
-            <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.8;">Press F to toggle</div>
+            <div style="font-size: 0.7rem; margin-top: 4px; opacity: 0.8;">
+                Mode: <span id="fpsMode">UNLIMITED</span><br>
+                Press F to toggle • U for mode
+            </div>
         </div>
         
         <div id="gameMenu" class="game-menu">
@@ -280,7 +283,7 @@
             <div class="controls">
                 <p>Player 1: W/S keys or drag paddle | Player 2: Arrow Keys or drag paddle</p>
                 <p>Press SPACE to pause | ESC to return to menu</p>
-                <p style="font-size: 0.8rem; color: #888;">Press F key or click FPS button (top-right) for performance monitor</p>
+                <p style="font-size: 0.8rem; color: #888;">Press F for FPS monitor, U to cycle unlimited FPS modes</p>
             </div>
         </div>
         
@@ -387,6 +390,41 @@
             fps: 60
         };
         
+        // Unlimited FPS settings
+        let unlimitedFPS = {
+            enabled: true, // Enable unlimited FPS by default
+            method: 'hybrid' // 'raf', 'timeout', 'hybrid', 'immediate'
+        };
+        
+        // High performance frame scheduler
+        function scheduleNextFrame(callback) {
+            if (!unlimitedFPS.enabled) {
+                requestAnimationFrame(callback);
+                return;
+            }
+            
+            switch (unlimitedFPS.method) {
+                case 'timeout':
+                    setTimeout(callback, 0);
+                    break;
+                case 'immediate':
+                    if (typeof setImmediate !== 'undefined') {
+                        setImmediate(callback);
+                    } else {
+                        setTimeout(callback, 0);
+                    }
+                    break;
+                case 'hybrid':
+                    // Use both for maximum performance
+                    setTimeout(() => {
+                        requestAnimationFrame(callback);
+                    }, 0);
+                    break;
+                default:
+                    requestAnimationFrame(callback);
+            }
+        }
+        
         // Darth Vader style insults
         const vaderInsults = [
             "Your lack of skill disturbs me.",
@@ -451,8 +489,29 @@
             const fpsDisplay = document.getElementById('fpsDisplay');
             if (fpsCounter.displayEnabled) {
                 fpsDisplay.classList.add('visible');
+                updateFpsMode();
             } else {
                 fpsDisplay.classList.remove('visible');
+            }
+        }
+        
+        function cycleFpsMode() {
+            const modes = ['hybrid', 'timeout', 'immediate', 'raf'];
+            const currentIndex = modes.indexOf(unlimitedFPS.method);
+            const nextIndex = (currentIndex + 1) % modes.length;
+            unlimitedFPS.method = modes[nextIndex];
+            unlimitedFPS.enabled = (unlimitedFPS.method !== 'raf');
+            updateFpsMode();
+        }
+        
+        function updateFpsMode() {
+            const modeElement = document.getElementById('fpsMode');
+            if (modeElement) {
+                let modeText = unlimitedFPS.enabled ? 'UNLIMITED' : 'V-SYNC';
+                if (unlimitedFPS.enabled) {
+                    modeText += ` (${unlimitedFPS.method.toUpperCase()})`;
+                }
+                modeElement.textContent = modeText;
             }
         }
         
@@ -1345,7 +1404,7 @@
                     countdown.number = currentNumber;
                 }
                 
-                requestAnimationFrame(animateCountdown);
+                scheduleNextFrame(animateCountdown);
             } else {
                 // Countdown finished - start game
                 countdown.active = false;
@@ -1488,7 +1547,8 @@
                 drawPauseScreen();
             }
             
-            requestAnimationFrame(gameLoop);
+            // Schedule next frame with unlimited FPS capability
+            scheduleNextFrame(gameLoop);
         }
         
         function drawCenterLine() {
@@ -1629,7 +1689,7 @@
             
             // Continue animation or end it
             if (winAnimation.scrollY > -1000) {
-                requestAnimationFrame(animateWinScreen);
+                scheduleNextFrame(animateWinScreen);
             } else {
                 setTimeout(() => {
                     winAnimation.active = false;
@@ -1763,6 +1823,9 @@
             } else if (e.key === 'f' || e.key === 'F') {
                 e.preventDefault();
                 toggleFpsDisplay();
+            } else if (e.key === 'u' || e.key === 'U') {
+                e.preventDefault();
+                cycleFpsMode();
             }
         });
         
