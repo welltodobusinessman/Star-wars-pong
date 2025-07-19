@@ -58,6 +58,34 @@
             z-index: 10;
         }
         
+        .fps-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 8px 12px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ff00;
+            z-index: 15;
+            user-select: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        .fps-counter.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .fps-counter:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
         .game-menu {
             position: absolute;
             top: 50%;
@@ -195,6 +223,10 @@
             <div><span id="player2Name">Player 2</span>: <span id="player2Score">0</span></div>
         </div>
         
+        <div id="fpsCounter" class="fps-counter hidden" onclick="toggleFpsCounter()">
+            FPS: <span id="fpsValue">60</span>
+        </div>
+        
         <div id="gameMenu" class="game-menu">
             <h1>STAR WARS PONG</h1>
             <button onclick="showPlayerSetup('twoPlayer')">Two Player</button>
@@ -202,6 +234,7 @@
             <div class="controls">
                 <p>Player 1: W/S keys or drag paddle | Player 2: Arrow Keys or drag paddle</p>
                 <p>Press SPACE to pause | ESC to return to menu</p>
+                <p style="font-size: 0.8rem; color: #888;">Click FPS counter (top-right) to toggle performance display</p>
             </div>
         </div>
         
@@ -298,6 +331,15 @@
         // Audio context for sound effects
         let audioContext;
         let speechSynthesis = window.speechSynthesis;
+        let audioInitialized = false;
+        
+        // FPS counter variables
+        let fpsCounter = {
+            enabled: false,
+            frameCount: 0,
+            lastTime: performance.now(),
+            fps: 60
+        };
         
         // Darth Vader style insults
         const vaderInsults = [
@@ -322,10 +364,80 @@
         let usedInsults = [];
         let currentInsultIndex = 0;
         
-        // Initialize audio
+        // Initialize audio with mobile compatibility
         function initAudio() {
             if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Handle suspended context (mobile requirement)
+                    if (audioContext.state === 'suspended') {
+                        return audioContext.resume().then(() => {
+                            audioInitialized = true;
+                            console.log('Audio context resumed successfully');
+                        }).catch(err => {
+                            console.warn('Could not resume audio context:', err);
+                        });
+                    } else {
+                        audioInitialized = true;
+                    }
+                } catch (err) {
+                    console.warn('Could not create audio context:', err);
+                }
+            }
+            return Promise.resolve();
+        }
+        
+        // Ensure audio context is resumed on user interaction
+        function ensureAudioContext() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    audioInitialized = true;
+                }).catch(err => {
+                    console.warn('Could not resume audio context:', err);
+                });
+            }
+        }
+        
+        // FPS counter functions
+        function toggleFpsCounter() {
+            fpsCounter.enabled = !fpsCounter.enabled;
+            const fpsElement = document.getElementById('fpsCounter');
+            if (fpsCounter.enabled) {
+                fpsElement.classList.remove('hidden');
+            } else {
+                fpsElement.classList.add('hidden');
+            }
+        }
+        
+        function updateFpsCounter() {
+            if (!fpsCounter.enabled) return;
+            
+            fpsCounter.frameCount++;
+            const currentTime = performance.now();
+            
+            if (currentTime - fpsCounter.lastTime >= 1000) {
+                fpsCounter.fps = Math.round((fpsCounter.frameCount * 1000) / (currentTime - fpsCounter.lastTime));
+                document.getElementById('fpsValue').textContent = fpsCounter.fps;
+                
+                // Color code the FPS
+                const fpsElement = document.getElementById('fpsCounter');
+                if (fpsCounter.fps >= 55) {
+                    fpsElement.style.color = '#00ff00';
+                    fpsElement.style.borderColor = '#00ff00';
+                    fpsElement.style.textShadow = '0 0 5px #00ff00';
+                } else if (fpsCounter.fps >= 30) {
+                    fpsElement.style.color = '#ffff00';
+                    fpsElement.style.borderColor = '#ffff00';
+                    fpsElement.style.textShadow = '0 0 5px #ffff00';
+                } else {
+                    fpsElement.style.color = '#ff0000';
+                    fpsElement.style.borderColor = '#ff0000';
+                    fpsElement.style.textShadow = '0 0 5px #ff0000';
+                }
+                
+                fpsCounter.frameCount = 0;
+                fpsCounter.lastTime = currentTime;
             }
         }
         
@@ -370,7 +482,10 @@
         
         // Vader evil laugh function
         function vaderLaugh() {
-            if (!audioContext) return;
+            if (!audioContext || !audioInitialized) {
+                ensureAudioContext();
+                return;
+            }
             
             // Generate clearer, louder evil laugh sound effect
             const laughSegments = [
@@ -534,7 +649,10 @@
         
         // Sound generation functions
         function playBeep(frequency = 440, duration = 0.1, volume = 0.1) {
-            if (!audioContext) return;
+            if (!audioContext || !audioInitialized) {
+                ensureAudioContext();
+                return;
+            }
             
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -555,7 +673,10 @@
         
         // Victory music generation - Original epic space adventure theme
         function playVictoryMusic() {
-            if (!audioContext) return;
+            if (!audioContext || !audioInitialized) {
+                ensureAudioContext();
+                return;
+            }
             
             // Original heroic fanfare inspired by classic space opera themes
             const notes = [
@@ -603,7 +724,10 @@
         
         // Defeat music generation - Darker version of victory theme
         function playDefeatMusic() {
-            if (!audioContext) return;
+            if (!audioContext || !audioInitialized) {
+                ensureAudioContext();
+                return;
+            }
             
             // Same melody as victory but in minor key and lower octave
             const notes = [
@@ -968,6 +1092,9 @@
         
         // Menu functions
         function showDifficultyMenu() {
+            // Initialize audio on user interaction
+            ensureAudioContext();
+            
             document.getElementById('gameMenu').classList.add('hidden');
             document.getElementById('difficultyMenu').classList.remove('hidden');
         }
@@ -978,6 +1105,9 @@
         }
         
         function showPlayerSetup(mode, difficulty = 'medium') {
+            // Initialize audio on user interaction
+            ensureAudioContext();
+            
             hideAllMenus();
             document.getElementById('playerSetup').classList.remove('hidden');
             
@@ -1086,7 +1216,10 @@
         
         // Game functions
         function startGame(mode, difficulty = 'medium') {
-            initAudio();
+            // Initialize audio with user interaction
+            initAudio().then(() => {
+                ensureAudioContext();
+            });
             
             // Load voices for speech synthesis
             if (speechSynthesis && speechSynthesis.getVoices().length === 0) {
@@ -1266,6 +1399,9 @@
         // Game loop
         function gameLoop() {
             if (!gameRunning || countdown.active) return;
+            
+            // Update FPS counter
+            updateFpsCounter();
             
             // Clear canvas
             ctx.fillStyle = 'rgba(0, 4, 40, 0.1)';
@@ -1475,6 +1611,9 @@
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             
+            // Ensure audio context is resumed on touch
+            ensureAudioContext();
+            
             if (!gameRunning || gamePaused) return;
             
             for (let i = 0; i < e.touches.length; i++) {
@@ -1593,6 +1732,32 @@
         
         // Initialize
         resizeCanvas();
+        
+        // Mobile audio setup
+        function setupMobileAudio() {
+            // Detect mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Add mobile-specific touch handlers for better audio initialization
+                document.addEventListener('touchstart', function() {
+                    ensureAudioContext();
+                }, { once: true });
+                
+                // Show FPS counter by default on mobile for performance monitoring
+                setTimeout(() => {
+                    if (!fpsCounter.enabled) {
+                        toggleFpsCounter();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Setup mobile audio when page loads
+        setupMobileAudio();
+        
+        // Add click handler to any button for audio initialization
+        document.addEventListener('click', ensureAudioContext);
         
         // Prevent default arrow key scrolling
         window.addEventListener('keydown', (e) => {
