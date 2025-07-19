@@ -399,12 +399,49 @@
         const player1ScoreEl = document.getElementById('player1Score');
         const player2ScoreEl = document.getElementById('player2Score');
         
+        // Interval cleanup tracking
+        const activeIntervals = new Set();
+        
+        // Safe interval management
+        function createManagedInterval(callback, delay) {
+            const intervalId = setInterval(callback, delay);
+            activeIntervals.add(intervalId);
+            return intervalId;
+        }
+        
+        function clearManagedInterval(intervalId) {
+            clearInterval(intervalId);
+            activeIntervals.delete(intervalId);
+        }
+        
+        function clearAllIntervals() {
+            activeIntervals.forEach(id => clearInterval(id));
+            activeIntervals.clear();
+        }
+        
         // Game state
         let gameMode = null;
         let gameDifficulty = 'medium'; // easy, medium, hard
         let gameRunning = false;
         let gamePaused = false;
-        let pauseStart = 0;
+        
+        // Game configuration constants
+        const GAME_CONFIG = {
+            WINNING_SCORE: 11,
+            PADDLE_SPEED: 3.5,
+            BALL_BASE_SPEED: 2.5,
+            BALL_SPEED_INCREASE: 0.05,
+            PADDLE_WIDTH: 15,
+            PADDLE_HEIGHT: 80,
+            BALL_SIZE: 12,
+            TOUCH_PADDING: 20,
+            MAX_PLAYER_NAME_LENGTH: 15,
+            FPS_COUNTER_UPDATE_INTERVAL: 1000,
+            COUNTDOWN_DURATION: 3,
+            MAX_BALL_RESET_RETRIES: 50,
+            MAX_SPEECH_RETRY_ATTEMPTS: 20,
+            LOCALSTORAGE_SIZE_LIMIT: 1000000
+        };
         
         // Player names
         let player1Name = 'Player 1';
@@ -503,7 +540,14 @@
         function initAudio() {
             if (!audioContext) {
                 try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Check if AudioContext is supported
+                    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextConstructor) {
+                        console.warn('AudioContext not supported in this browser');
+                        return Promise.resolve();
+                    }
+                    
+                    audioContext = new AudioContextConstructor();
                     
                     // Handle suspended context (mobile requirement)
                     if (audioContext.state === 'suspended') {
@@ -512,12 +556,17 @@
                             console.log('Audio context resumed successfully');
                         }).catch(err => {
                             console.warn('Could not resume audio context:', err);
+                            // Continue without audio instead of failing
+                            audioInitialized = false;
                         });
                     } else {
                         audioInitialized = true;
                     }
                 } catch (err) {
                     console.warn('Could not create audio context:', err);
+                    audioContext = null;
+                    audioInitialized = false;
+                    // Continue gracefully without audio
                 }
             }
             return Promise.resolve();
@@ -598,20 +647,26 @@
             if (currentTime - fpsCounter.lastTime >= 1000) {
                 fpsCounter.fps = Math.round((fpsCounter.frameCount * 1000) / (currentTime - fpsCounter.lastTime));
                 
-                // Only update display if visible
+                // Only update display if visible and elements exist
                 if (fpsCounter.displayEnabled) {
-                    document.getElementById('fpsValue').textContent = fpsCounter.fps;
+                    const fpsValueElement = document.getElementById('fpsValue');
+                    const fpsDisplayElement = document.getElementById('fpsDisplay');
                     
-                    // Color code the FPS display
-                    const fpsDisplay = document.getElementById('fpsDisplay');
-                    fpsDisplay.classList.remove('good', 'warning', 'critical');
+                    if (fpsValueElement) {
+                        fpsValueElement.textContent = fpsCounter.fps;
+                    }
                     
-                    if (fpsCounter.fps >= 55) {
-                        fpsDisplay.classList.add('good');
-                    } else if (fpsCounter.fps >= 30) {
-                        fpsDisplay.classList.add('warning');
-                    } else {
-                        fpsDisplay.classList.add('critical');
+                    // Color code the FPS display if element exists
+                    if (fpsDisplayElement) {
+                        fpsDisplayElement.classList.remove('good', 'warning', 'critical');
+                        
+                        if (fpsCounter.fps >= 55) {
+                            fpsDisplayElement.classList.add('good');
+                        } else if (fpsCounter.fps >= 30) {
+                            fpsDisplayElement.classList.add('warning');
+                        } else {
+                            fpsDisplayElement.classList.add('critical');
+                        }
                     }
                 }
                 
@@ -624,17 +679,37 @@
         function showSpeechDebug() {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             if (isMobile || speechDebugMode) {
-                document.getElementById('speechDebug').style.display = 'block';
-                document.getElementById('speechTestBtn').style.display = 'block';
+                const speechDebugElement = document.getElementById('speechDebug');
+                const speechTestBtnElement = document.getElementById('speechTestBtn');
+                
+                if (speechDebugElement) {
+                    speechDebugElement.style.display = 'block';
+                }
+                if (speechTestBtnElement) {
+                    speechTestBtnElement.style.display = 'block';
+                }
                 updateSpeechDebug();
             }
         }
         
         function updateSpeechDebug() {
-            document.getElementById('speechStatus').textContent = speechInitialized ? 'READY' : 'INIT';
-            document.getElementById('voiceCount').textContent = availableVoices.length;
-            document.getElementById('speechAttemptCount').textContent = speechAttempts;
-            document.getElementById('speechError').textContent = lastSpeechError || 'No errors';
+            const speechStatusElement = document.getElementById('speechStatus');
+            const voiceCountElement = document.getElementById('voiceCount');
+            const speechAttemptCountElement = document.getElementById('speechAttemptCount');
+            const speechErrorElement = document.getElementById('speechError');
+            
+            if (speechStatusElement) {
+                speechStatusElement.textContent = speechInitialized ? 'READY' : 'INIT';
+            }
+            if (voiceCountElement) {
+                voiceCountElement.textContent = availableVoices.length;
+            }
+            if (speechAttemptCountElement) {
+                speechAttemptCountElement.textContent = speechAttempts;
+            }
+            if (speechErrorElement) {
+                speechErrorElement.textContent = lastSpeechError || 'No errors';
+            }
         }
         
         // Manual speech test function for mobile debugging
@@ -688,11 +763,11 @@
             
             // Method 3: Repeated attempts for stubborn mobile browsers
             let attempts = 0;
-            const voiceLoader = setInterval(() => {
+            const voiceLoader = createManagedInterval(() => {
                 attempts++;
                 const voices = speechSynthesis.getVoices();
                 if (voices.length > 0 || attempts > 10) {
-                    clearInterval(voiceLoader);
+                    clearManagedInterval(voiceLoader);
                     if (voices.length > 0) {
                         availableVoices = voices;
                         speechInitialized = true;
@@ -753,13 +828,28 @@
             if (!audioInitialized) {
                 // Try to create a dummy audio context to test user interaction
                 try {
-                    const testContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Check if AudioContext constructor is available
+                    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextConstructor) {
+                        console.warn('AudioContext not supported in this browser');
+                        return false;
+                    }
+                    
+                    const testContext = new AudioContextConstructor();
                     if (testContext.state !== 'suspended') {
                         audioInitialized = true;
                     }
-                    testContext.close();
+                    
+                    // Ensure context is properly closed
+                    if (testContext.close) {
+                        testContext.close().catch(err => {
+                            console.warn('Error closing test audio context:', err);
+                        });
+                    }
                 } catch (e) {
-                    console.log('Audio context test failed:', e);
+                    console.warn('Audio context test failed:', e);
+                    // Don't throw error, just log and continue without audio
+                    return false;
                 }
             }
             return audioInitialized;
@@ -1236,9 +1326,9 @@
             constructor(x, y, isPlayer1 = true) {
                 this.x = x;
                 this.y = y;
-                this.width = 15;
-                this.height = 80;
-                this.speed = 3.5; // Reduced from 5 to 3.5 for smoother movement
+                this.width = GAME_CONFIG.PADDLE_WIDTH;
+                this.height = GAME_CONFIG.PADDLE_HEIGHT;
+                this.speed = GAME_CONFIG.PADDLE_SPEED; // Reduced from 5 to 3.5 for smoother movement
                 this.velocity = 0; // For smooth acceleration/deceleration
                 this.acceleration = 0.8;
                 this.friction = 0.85;
@@ -1382,7 +1472,7 @@
         
         class Ball {
             constructor() {
-                this.size = 12;
+                this.size = GAME_CONFIG.BALL_SIZE;
                 this.setSpeedByDifficulty();
                 this.scored = false; // Prevent multiple scoring
                 this.reset();
@@ -1391,7 +1481,7 @@
             setSpeedByDifficulty() {
                 switch(gameDifficulty) {
                     case 'easy':
-                        this.baseSpeed = 2.5;
+                        this.baseSpeed = GAME_CONFIG.BALL_BASE_SPEED;
                         this.speedIncrease = 0.03;
                         break;
                     case 'medium':
@@ -1406,11 +1496,24 @@
                 this.speed = this.baseSpeed;
             }
             
-            reset() {
-                // Ensure canvas dimensions are available
+            reset(retryCount = 0) {
+                // Ensure canvas dimensions are available with retry limit
                 if (!canvas.width || !canvas.height) {
-                    setTimeout(() => this.reset(), 100);
-                    return;
+                    if (retryCount < GAME_CONFIG.MAX_BALL_RESET_RETRIES) { // Max 5 seconds of retries
+                        setTimeout(() => this.reset(retryCount + 1), 100);
+                        return;
+                    } else {
+                        // Fallback to default dimensions if canvas still not ready
+                        console.warn('Canvas dimensions not available, using fallback');
+                        this.x = 400; // Fallback canvas center
+                        this.y = 300;
+                        this.scored = false;
+                        const angle = (Math.random() - 0.5) * Math.PI / 4;
+                        const direction = Math.random() < 0.5 ? 1 : -1;
+                        this.vx = Math.cos(angle) * this.speed * direction;
+                        this.vy = Math.sin(angle) * this.speed;
+                        return;
+                    }
                 }
                 
                 this.x = canvas.width / 2 - this.size / 2;
@@ -1506,7 +1609,7 @@
                 playBeep(200, 0.3);
                 updateScore();
                 
-                if (paddle1.score >= 11 || paddle2.score >= 11) {
+                if (paddle1.score >= GAME_CONFIG.WINNING_SCORE || paddle2.score >= GAME_CONFIG.WINNING_SCORE) {
                     endGame();
                     return;
                 }
@@ -1595,15 +1698,31 @@
             }
         }
         
+        // Input validation function
+        function validatePlayerName(name) {
+            // Remove any HTML tags for security
+            const cleaned = name.replace(/<[^>]*>/g, '');
+            
+            // Limit to alphanumeric, spaces, and common punctuation
+            const sanitized = cleaned.replace(/[^a-zA-Z0-9\s\-_\.]/g, '');
+            
+            // Trim and limit length
+            const trimmed = sanitized.trim().substring(0, GAME_CONFIG.MAX_PLAYER_NAME_LENGTH);
+            
+            return trimmed || 'Player';
+        }
+        
         function confirmPlayerSetup() {
-            // Get names from inputs
-            const p1Name = document.getElementById('player1NameInput').value.trim() || 'Player 1';
+            // Get names from inputs with validation
+            const p1Input = document.getElementById('player1NameInput').value.trim();
+            const p1Name = validatePlayerName(p1Input) || 'Player 1';
             let p2Name;
             
             if (window.pendingGameMode === 'ai') {
                 p2Name = 'Darth Vader';
             } else {
-                p2Name = document.getElementById('player2NameInput').value.trim() || 'Player 2';
+                const p2Input = document.getElementById('player2NameInput').value.trim();
+                p2Name = validatePlayerName(p2Input) || 'Player 2';
             }
             
             // Update player names
@@ -1774,8 +1893,26 @@
                 // Countdown finished - start game
                 countdown.active = false;
                 
-                // Create ball and start game
-                ball = new Ball();
+                // Ensure game state is properly initialized before creating objects
+                if (!paddle1 || !paddle2) {
+                    console.error('Paddles not initialized, cannot start game');
+                    returnToMenu();
+                    return;
+                }
+                
+                // Create ball with proper initialization check
+                try {
+                    ball = new Ball();
+                    if (!ball || ball.x === undefined || ball.y === undefined) {
+                        throw new Error('Ball initialization failed');
+                    }
+                } catch (error) {
+                    console.error('Failed to create ball:', error);
+                    returnToMenu();
+                    return;
+                }
+                
+                // Only set gameRunning to true after all objects are properly initialized
                 gameRunning = true;
                 
                 // Play start sound
@@ -1787,7 +1924,7 @@
         
         function endGame() {
             gameRunning = false;
-            const winner = paddle1.score >= 11 ? player1Name : player2Name;
+            const winner = paddle1.score >= GAME_CONFIG.WINNING_SCORE ? player1Name : player2Name;
             
             // Save scores
             saveScores();
@@ -1799,6 +1936,9 @@
         function returnToMenu() {
             gameRunning = false;
             gamePaused = false;
+            
+            // Clean up all intervals to prevent memory leaks
+            clearAllIntervals();
             
             // Show main menu, hide all others
             hideAllMenus();
@@ -1833,9 +1973,6 @@
             if (!gameRunning) return;
             
             gamePaused = !gamePaused;
-            if (gamePaused) {
-                pauseStart = Date.now();
-            }
         }
         
         function updateScore() {
@@ -1855,15 +1992,39 @@
                 gameMode: gameMode,
                 timestamp: Date.now()
             };
-            localStorage.setItem('starWarsPongScores', JSON.stringify(scores));
+            
+            try {
+                // Check if localStorage is available
+                if (typeof Storage === 'undefined') {
+                    console.warn('localStorage not supported');
+                    return;
+                }
+                
+                const scoreData = JSON.stringify(scores);
+                
+                // Check data size (localStorage typically has 5-10MB limit)
+                if (scoreData.length > GAME_CONFIG.LOCALSTORAGE_SIZE_LIMIT) { // 1MB safety limit
+                    console.warn('Score data too large, skipping save');
+                    return;
+                }
+                
+                localStorage.setItem('starWarsPongScores', scoreData);
+            } catch (error) {
+                if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                    console.warn('localStorage quota exceeded, clearing old data');
+                    try {
+                        // Clear old game data and try again
+                        localStorage.removeItem('starWarsPongScores');
+                        localStorage.setItem('starWarsPongScores', JSON.stringify(scores));
+                    } catch (retryError) {
+                        console.error('Failed to save scores even after cleanup:', retryError);
+                    }
+                } else {
+                    console.error('Failed to save scores:', error);
+                }
+            }
         }
         
-        function loadScores() {
-            // Don't load previous scores - always start fresh
-            // This ensures each game starts at 0-0
-            paddle1.score = 0;
-            paddle2.score = 0;
-        }
         
         // Game loop
         function gameLoop() {
@@ -2066,9 +2227,18 @@
         // Touch event handlers
         function getTouchPos(touch) {
             const rect = canvas.getBoundingClientRect();
+            
+            // Account for device pixel ratio and zoom levels
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            // Calculate position relative to canvas bounds
+            const relativeX = touch.clientX - rect.left;
+            const relativeY = touch.clientY - rect.top;
+            
             return {
-                x: touch.clientX - rect.left,
-                y: touch.clientY - rect.top
+                x: relativeX * scaleX,
+                y: relativeY * scaleY
             };
         }
         
@@ -2276,12 +2446,12 @@
                 
                 // Repeated voice loading attempts
                 let voiceLoadAttempts = 0;
-                const voiceLoader = setInterval(() => {
+                const voiceLoader = createManagedInterval(() => {
                     voiceLoadAttempts++;
                     speechSynthesis.getVoices();
                     
                     if (speechSynthesis.getVoices().length > 0 || voiceLoadAttempts > 20) {
-                        clearInterval(voiceLoader);
+                        clearManagedInterval(voiceLoader);
                         if (speechSynthesis.getVoices().length > 0) {
                             console.log('✅ Voices loaded after', voiceLoadAttempts, 'attempts');
                             initSpeechSynthesis();
