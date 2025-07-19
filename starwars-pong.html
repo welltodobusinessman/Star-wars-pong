@@ -415,6 +415,8 @@
         let audioContext;
         let speechSynthesis = window.speechSynthesis;
         let audioInitialized = false;
+        let speechInitialized = false;
+        let availableVoices = [];
         
         // FPS counter variables
         let fpsCounter = {
@@ -511,9 +513,17 @@
             if (audioContext && audioContext.state === 'suspended') {
                 audioContext.resume().then(() => {
                     audioInitialized = true;
+                    // Also initialize speech synthesis on user interaction
+                    if (!speechInitialized) {
+                        initSpeechSynthesis();
+                    }
                 }).catch(err => {
                     console.warn('Could not resume audio context:', err);
                 });
+            } else if (!speechInitialized) {
+                // Initialize speech synthesis even if audio context is not available
+                initSpeechSynthesis();
+                audioInitialized = true;
             }
         }
         
@@ -579,43 +589,104 @@
             }
         }
         
-        // Darth Vader style speech function
-        function speakAsVader(text, isScream = false) {
-            if (!speechSynthesis) return;
+        // Initialize speech synthesis for mobile compatibility
+        function initSpeechSynthesis() {
+            if (!speechSynthesis) {
+                console.warn('Speech synthesis not available');
+                return false;
+            }
             
-            // Cancel any ongoing speech
-            speechSynthesis.cancel();
+            // Load voices and mark as initialized
+            function loadVoices() {
+                availableVoices = speechSynthesis.getVoices();
+                speechInitialized = true;
+                console.log('Speech synthesis initialized with', availableVoices.length, 'voices');
+            }
             
-            const utterance = new SpeechSynthesisUtterance(text);
-            
-            if (isScream) {
-                // Special settings for the NOOO scream
-                utterance.rate = 0.4;     // Much slower for dramatic effect
-                utterance.pitch = 0.2;    // Even lower pitch
-                utterance.volume = 1.0;   // Maximum volume
+            // Handle voices loading (especially important on mobile)
+            if (availableVoices.length === 0) {
+                speechSynthesis.addEventListener('voiceschanged', loadVoices, { once: true });
+                // Trigger voice loading on some browsers
+                speechSynthesis.getVoices();
             } else {
-                // Regular Vader voice settings
-                utterance.rate = 0.7;     // Slower speaking rate
-                utterance.pitch = 0.3;    // Much lower pitch
-                utterance.volume = 0.8;   // Loud and commanding
+                loadVoices();
             }
             
-            // Try to find a good voice for Vader (prefer male, deep voices)
-            const voices = speechSynthesis.getVoices();
-            const vaderVoice = voices.find(voice => 
-                voice.name.toLowerCase().includes('male') ||
-                voice.name.toLowerCase().includes('bass') ||
-                voice.name.toLowerCase().includes('deep') ||
-                (voice.gender && voice.gender.toLowerCase() === 'male')
-            ) || voices.find(voice => 
-                voice.lang.startsWith('en') && !voice.name.toLowerCase().includes('female')
-            ) || voices[0];
-            
-            if (vaderVoice) {
-                utterance.voice = vaderVoice;
+            return true;
+        }
+        
+        // Mobile-compatible speech function
+        function speakAsVader(text, isScream = false) {
+            if (!speechSynthesis || !speechInitialized) {
+                console.warn('Speech synthesis not ready');
+                return;
             }
             
-            speechSynthesis.speak(utterance);
+            // Ensure we have user interaction (required on mobile)
+            if (!audioInitialized) {
+                console.warn('Audio not initialized - speech requires user interaction');
+                return;
+            }
+            
+            try {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+                
+                // Wait a moment for cancel to complete on mobile
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    if (isScream) {
+                        // Special settings for the NOOO scream
+                        utterance.rate = 0.4;     // Much slower for dramatic effect
+                        utterance.pitch = 0.2;    // Even lower pitch
+                        utterance.volume = 1.0;   // Maximum volume
+                    } else {
+                        // Regular Vader voice settings
+                        utterance.rate = 0.7;     // Slower speaking rate
+                        utterance.pitch = 0.3;    // Much lower pitch
+                        utterance.volume = 0.8;   // Loud and commanding
+                    }
+                    
+                    // Find the best voice for Vader (prefer male, deep voices)
+                    const vaderVoice = availableVoices.find(voice => 
+                        voice.name.toLowerCase().includes('male') ||
+                        voice.name.toLowerCase().includes('bass') ||
+                        voice.name.toLowerCase().includes('deep') ||
+                        voice.name.toLowerCase().includes('low') ||
+                        voice.name.toLowerCase().includes('daniel') ||
+                        voice.name.toLowerCase().includes('alex') ||
+                        (voice.gender && voice.gender.toLowerCase() === 'male')
+                    ) || availableVoices.find(voice => 
+                        voice.lang.startsWith('en') && !voice.name.toLowerCase().includes('female')
+                    ) || availableVoices[0];
+                    
+                    if (vaderVoice) {
+                        utterance.voice = vaderVoice;
+                        console.log('Using voice:', vaderVoice.name);
+                    }
+                    
+                    // Add error handling for mobile
+                    utterance.onerror = function(event) {
+                        console.error('Speech synthesis error:', event.error);
+                    };
+                    
+                    utterance.onstart = function() {
+                        console.log('Speech started:', text);
+                    };
+                    
+                    utterance.onend = function() {
+                        console.log('Speech ended');
+                    };
+                    
+                    // Speak the utterance
+                    speechSynthesis.speak(utterance);
+                    
+                }, 100); // Small delay for mobile compatibility
+                
+            } catch (error) {
+                console.error('Speech synthesis error:', error);
+            }
         }
         
         // Vader evil laugh function
@@ -1359,10 +1430,8 @@
                 ensureAudioContext();
             });
             
-            // Load voices for speech synthesis
-            if (speechSynthesis && speechSynthesis.getVoices().length === 0) {
-                speechSynthesis.addEventListener('voiceschanged', () => {}, { once: true });
-            }
+            // Initialize speech synthesis for mobile
+            initSpeechSynthesis();
             
             gameMode = mode;
             gameDifficulty = difficulty;
@@ -1903,6 +1972,22 @@
         
         // Add click handler to any button for audio initialization
         document.addEventListener('click', ensureAudioContext);
+        
+        // Initialize speech synthesis immediately
+        initSpeechSynthesis();
+        
+        // Add additional mobile-specific speech initialization
+        document.addEventListener('touchstart', function initMobileSpeech() {
+            if (!speechInitialized) {
+                initSpeechSynthesis();
+                audioInitialized = true;
+            }
+        }, { once: true });
+        
+        // Force speech synthesis to load voices on mobile
+        if (speechSynthesis) {
+            speechSynthesis.getVoices();
+        }
         
         // Mobile FPS button fix
         function setupMobileFpsButton() {
