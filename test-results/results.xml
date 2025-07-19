@@ -1,0 +1,319 @@
+<testsuites id="" name="" tests="15" failures="15" skipped="0" errors="0" time="5.81871">
+<testsuite name="game.spec.js" timestamp="2025-07-18T23:56:02.532Z" hostname="chromium" tests="15" failures="15" skipped="0" time="0.015" errors="0">
+<testcase name="Star Wars Pong Game › should load game correctly" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:9:3 should load game correctly" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:9:3 › Star Wars Pong Game › should load game correctly ─────────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should navigate to difficulty menu" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:16:3 should navigate to difficulty menu" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:16:3 › Star Wars Pong Game › should navigate to difficulty menu ────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should start two player game" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:22:3 should start two player game" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:22:3 › Star Wars Pong Game › should start two player game ──────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should start AI game" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:39:3 should start AI game" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:39:3 › Star Wars Pong Game › should start AI game ──────────────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should respond to keyboard controls" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:54:3 should respond to keyboard controls" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:54:3 › Star Wars Pong Game › should respond to keyboard controls ───────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should handle mobile touch events" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:84:3 should handle mobile touch events" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:84:3 › Star Wars Pong Game › should handle mobile touch events ─────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should display score correctly" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:106:3 should display score correctly" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:106:3 › Star Wars Pong Game › should display score correctly ───────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should handle responsive design" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:120:3 should handle responsive design" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:120:3 › Star Wars Pong Game › should handle responsive design ──────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should handle window resize" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:143:3 should handle window resize" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:143:3 › Star Wars Pong Game › should handle window resize ──────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should not have console errors" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:163:3 should not have console errors" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:163:3 › Star Wars Pong Game › should not have console errors ───────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should handle audio context creation" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:184:3 should handle audio context creation" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:184:3 › Star Wars Pong Game › should handle audio context creation ─────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should maintain game state correctly" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:199:3 should maintain game state correctly" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:199:3 › Star Wars Pong Game › should maintain game state correctly ─────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Star Wars Pong Game › should run test suite" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:229:3 should run test suite" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:229:3 › Star Wars Pong Game › should run test suite ────────────────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Game Performance › should load within performance budget" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:248:3 should load within performance budget" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:248:3 › Game Performance › should load within performance budget ───────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+<testcase name="Game Performance › should maintain smooth frame rate" classname="game.spec.js" time="0.001">
+<failure message="game.spec.js:258:3 should maintain smooth frame rate" type="FAILURE">
+<![CDATA[  [chromium] › game.spec.js:258:3 › Game Performance › should maintain smooth frame rate ───────────
+
+    Error: browserType.launch: 
+    ╔══════════════════════════════════════════════════════╗
+    ║ Host system is missing dependencies to run browsers. ║
+    ║ Please install them with the following command:      ║
+    ║                                                      ║
+    ║     sudo npx playwright install-deps                 ║
+    ║                                                      ║
+    ║ Alternatively, use apt:                              ║
+    ║     sudo apt-get install libnspr4\                   ║
+    ║         libnss3\                                     ║
+    ║         libasound2t64                                ║
+    ║                                                      ║
+    ║ <3 Playwright Team                                   ║
+    ╚══════════════════════════════════════════════════════╝
+]]>
+</failure>
+</testcase>
+</testsuite>
+</testsuites>
