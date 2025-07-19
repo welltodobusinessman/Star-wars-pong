@@ -58,32 +58,73 @@
             z-index: 10;
         }
         
-        .fps-counter {
+        .fps-button {
             position: absolute;
             top: 20px;
             right: 20px;
             background: rgba(0, 0, 0, 0.8);
-            color: #00ff00;
+            color: #FFE81F;
             padding: 8px 12px;
-            border: 1px solid #00ff00;
+            border: 2px solid #FFE81F;
             border-radius: 5px;
-            font-family: 'Courier New', monospace;
+            font-family: 'Orbitron', monospace;
             font-size: 0.9rem;
             font-weight: bold;
-            text-shadow: 0 0 5px #00ff00;
+            text-shadow: 0 0 5px #FFE81F;
             z-index: 15;
             user-select: none;
             cursor: pointer;
-            transition: opacity 0.3s;
+            transition: all 0.3s;
         }
         
-        .fps-counter.hidden {
+        .fps-button:hover {
+            background: rgba(255, 232, 31, 0.2);
+            box-shadow: 0 0 10px #FFE81F;
+        }
+        
+        .fps-display {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            padding: 10px 15px;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            text-shadow: 0 0 8px #00ff00;
+            z-index: 15;
+            user-select: none;
+            transition: all 0.3s;
             opacity: 0;
             pointer-events: none;
+            transform: translateY(-10px);
         }
         
-        .fps-counter:hover {
-            background: rgba(0, 255, 0, 0.1);
+        .fps-display.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        
+        .fps-display.good {
+            color: #00ff00;
+            border-color: #00ff00;
+            text-shadow: 0 0 8px #00ff00;
+        }
+        
+        .fps-display.warning {
+            color: #ffff00;
+            border-color: #ffff00;
+            text-shadow: 0 0 8px #ffff00;
+        }
+        
+        .fps-display.critical {
+            color: #ff0000;
+            border-color: #ff0000;
+            text-shadow: 0 0 8px #ff0000;
         }
         
         .game-menu {
@@ -223,8 +264,13 @@
             <div><span id="player2Name">Player 2</span>: <span id="player2Score">0</span></div>
         </div>
         
-        <div id="fpsCounter" class="fps-counter hidden" onclick="toggleFpsCounter()">
-            FPS: <span id="fpsValue">60</span>
+        <div id="fpsButton" class="fps-button" onclick="toggleFpsDisplay()">
+            FPS
+        </div>
+        
+        <div id="fpsDisplay" class="fps-display">
+            <div>FPS: <span id="fpsValue">60</span></div>
+            <div style="font-size: 0.8rem; margin-top: 4px; opacity: 0.8;">Press F to toggle</div>
         </div>
         
         <div id="gameMenu" class="game-menu">
@@ -234,7 +280,7 @@
             <div class="controls">
                 <p>Player 1: W/S keys or drag paddle | Player 2: Arrow Keys or drag paddle</p>
                 <p>Press SPACE to pause | ESC to return to menu</p>
-                <p style="font-size: 0.8rem; color: #888;">Click FPS counter (top-right) to toggle performance display</p>
+                <p style="font-size: 0.8rem; color: #888;">Press F key or click FPS button (top-right) for performance monitor</p>
             </div>
         </div>
         
@@ -335,7 +381,7 @@
         
         // FPS counter variables
         let fpsCounter = {
-            enabled: false,
+            displayEnabled: false,
             frameCount: 0,
             lastTime: performance.now(),
             fps: 60
@@ -400,40 +446,39 @@
         }
         
         // FPS counter functions
-        function toggleFpsCounter() {
-            fpsCounter.enabled = !fpsCounter.enabled;
-            const fpsElement = document.getElementById('fpsCounter');
-            if (fpsCounter.enabled) {
-                fpsElement.classList.remove('hidden');
+        function toggleFpsDisplay() {
+            fpsCounter.displayEnabled = !fpsCounter.displayEnabled;
+            const fpsDisplay = document.getElementById('fpsDisplay');
+            if (fpsCounter.displayEnabled) {
+                fpsDisplay.classList.add('visible');
             } else {
-                fpsElement.classList.add('hidden');
+                fpsDisplay.classList.remove('visible');
             }
         }
         
         function updateFpsCounter() {
-            if (!fpsCounter.enabled) return;
-            
+            // Always calculate FPS for accuracy
             fpsCounter.frameCount++;
             const currentTime = performance.now();
             
             if (currentTime - fpsCounter.lastTime >= 1000) {
                 fpsCounter.fps = Math.round((fpsCounter.frameCount * 1000) / (currentTime - fpsCounter.lastTime));
-                document.getElementById('fpsValue').textContent = fpsCounter.fps;
                 
-                // Color code the FPS
-                const fpsElement = document.getElementById('fpsCounter');
-                if (fpsCounter.fps >= 55) {
-                    fpsElement.style.color = '#00ff00';
-                    fpsElement.style.borderColor = '#00ff00';
-                    fpsElement.style.textShadow = '0 0 5px #00ff00';
-                } else if (fpsCounter.fps >= 30) {
-                    fpsElement.style.color = '#ffff00';
-                    fpsElement.style.borderColor = '#ffff00';
-                    fpsElement.style.textShadow = '0 0 5px #ffff00';
-                } else {
-                    fpsElement.style.color = '#ff0000';
-                    fpsElement.style.borderColor = '#ff0000';
-                    fpsElement.style.textShadow = '0 0 5px #ff0000';
+                // Only update display if visible
+                if (fpsCounter.displayEnabled) {
+                    document.getElementById('fpsValue').textContent = fpsCounter.fps;
+                    
+                    // Color code the FPS display
+                    const fpsDisplay = document.getElementById('fpsDisplay');
+                    fpsDisplay.classList.remove('good', 'warning', 'critical');
+                    
+                    if (fpsCounter.fps >= 55) {
+                        fpsDisplay.classList.add('good');
+                    } else if (fpsCounter.fps >= 30) {
+                        fpsDisplay.classList.add('warning');
+                    } else {
+                        fpsDisplay.classList.add('critical');
+                    }
                 }
                 
                 fpsCounter.frameCount = 0;
@@ -1715,6 +1760,9 @@
                     countdown.active = false;
                 }
                 returnToMenu();
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                toggleFpsDisplay();
             }
         });
         
@@ -1744,10 +1792,10 @@
                     ensureAudioContext();
                 }, { once: true });
                 
-                // Show FPS counter by default on mobile for performance monitoring
+                // Show FPS display by default on mobile for performance monitoring
                 setTimeout(() => {
-                    if (!fpsCounter.enabled) {
-                        toggleFpsCounter();
+                    if (!fpsCounter.displayEnabled) {
+                        toggleFpsDisplay();
                     }
                 }, 1000);
             }
