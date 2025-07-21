@@ -468,6 +468,7 @@
         let availableVoices = [];
         let speechDebugMode = true;
         let speechAttempts = 0;
+        let currentSpeechText = null; // Track what's currently being spoken
         let lastSpeechError = null;
         
         // FPS counter variables
@@ -784,8 +785,11 @@
         function speakAsVader(text, isScream = false) {
             console.log('🎤 speakAsVader called:', text);
             
-            // Show visual indicator that speech was attempted
-            showSpeechAttempt(text);
+            // Prevent duplicate speech attempts for the same text
+            if (currentSpeechText === text && speechSynthesis.speaking) {
+                console.log('⏸️ Already speaking this text, skipping duplicate');
+                return;
+            }
             
             if (!speechSynthesis) {
                 lastSpeechError = 'speechSynthesis not available';
@@ -855,34 +859,6 @@
             return audioInitialized;
         }
         
-        // Show visual speech attempt indicator
-        function showSpeechAttempt(text) {
-            const indicator = document.createElement('div');
-            indicator.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(139, 0, 0, 0.95);
-                color: #ff6b6b;
-                padding: 20px;
-                border: 2px solid #ff6b6b;
-                border-radius: 10px;
-                font-family: 'Orbitron', monospace;
-                font-weight: bold;
-                z-index: 9999;
-                text-align: center;
-                box-shadow: 0 0 20px #ff6b6b;
-            `;
-            indicator.innerHTML = `🎤 VADER SPEAKS:<br>"${text}"`;
-            document.body.appendChild(indicator);
-            
-            setTimeout(() => {
-                if (indicator.parentNode) {
-                    indicator.parentNode.removeChild(indicator);
-                }
-            }, 3000);
-        }
         
         // Multiple speech attempt methods
         function attemptSpeech(text, isScream = false, attemptNumber = 0) {
@@ -895,9 +871,12 @@
             
             console.log(`🎤 Speech attempt #${attemptNumber + 1}`);
             
-            // Cancel any ongoing speech
+            // Only cancel if we're not currently speaking something important
+            // or if this is a retry (attemptNumber > 0)
             try {
-                speechSynthesis.cancel();
+                if (attemptNumber > 0 || !speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
             } catch (e) {
                 console.warn('Cancel failed:', e);
             }
@@ -932,6 +911,7 @@
                     utterance.onerror = function(event) {
                         lastSpeechError = `Speech error: ${event.error}`;
                         console.error('❌ Speech error:', event.error);
+                        currentSpeechText = null;
                         updateSpeechDebug();
                         
                         // Try again with different settings
@@ -942,12 +922,14 @@
                     
                     utterance.onstart = function() {
                         console.log('✅ Speech started successfully:', text);
+                        currentSpeechText = text;
                         lastSpeechError = null;
                         updateSpeechDebug();
                     };
                     
                     utterance.onend = function() {
                         console.log('✅ Speech completed');
+                        currentSpeechText = null;
                     };
                     
                     utterance.onpause = function() {
